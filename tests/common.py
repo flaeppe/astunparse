@@ -166,6 +166,30 @@ async def f():
         suite1
 """
 
+function_docstring = """\
+def f():
+    \"\"\"function
+
+    docs
+    \"\"\"
+    pass
+"""
+
+class_docstring = """\
+class c():
+    \"\"\"
+    class
+
+    docs
+    \"\"\"
+    pass
+"""
+
+module_docstring = """\
+\"\"\"module docs\"\"\"
+"""
+
+
 class AstunparseCommonTestCase:
     # Tests for specific bugs found in earlier versions of unparse
 
@@ -424,3 +448,12 @@ class AstunparseCommonTestCase:
     @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
     def test_async_with_as(self):
         self.check_roundtrip(async_with_as)
+
+    def test_function_docstring(self):
+        self.check_roundtrip(function_docstring)
+
+    def test_class_docstring(self):
+        self.check_roundtrip(class_docstring)
+
+    def test_module_docstring(self):
+        self.check_roundtrip(module_docstring)

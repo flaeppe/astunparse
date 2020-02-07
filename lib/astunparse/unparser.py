@@ -65,6 +65,11 @@ class Unparser:
         meth = getattr(self, "_"+tree.__class__.__name__)
         meth(tree)
 
+    def docstring(self, content):
+        self.fill("\"\"\"")
+        self.write(content)
+        self.write("\"\"\"")
+
 
     ############### Unparsing methods ######################
     # There should be one method per concrete grammar type #
@@ -74,7 +79,13 @@ class Unparser:
     ########################################################
 
     def _Module(self, tree):
-        for stmt in tree.body:
+        docstring = ast.get_docstring(tree, clean=False)
+        if docstring is None:
+            body = tree.body
+        else:
+            self.docstring(docstring)
+            body = tree.body[1:]
+        for stmt in body:
             self.dispatch(stmt)
 
     def _Interactive(self, tree):
@@ -340,7 +351,12 @@ class Unparser:
                     self.write(", ")
                 self.write(")")
         self.enter()
-        self.dispatch(t.body)
+        docstring = ast.get_docstring(t, clean=False)
+        if docstring is None:
+            self.dispatch(t.body)
+        else:
+            self.docstring(docstring)
+            self.dispatch(t.body[1:])
         self.leave()
 
     def _FunctionDef(self, t):
@@ -362,7 +378,12 @@ class Unparser:
             self.write(" -> ")
             self.dispatch(t.returns)
         self.enter()
-        self.dispatch(t.body)
+        docstring = ast.get_docstring(t, clean=False)
+        if docstring is None:
+            self.dispatch(t.body)
+        else:
+            self.docstring(docstring)
+            self.dispatch(t.body[1:])
         self.leave()
 
     def _For(self, t):
